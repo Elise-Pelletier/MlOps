@@ -1,7 +1,11 @@
 import sqlite3
 import pandas as pd
-from sklearn.linear_model import LinearRegression
+from sklearn.compose import ColumnTransformer
+from sklearn.discriminant_analysis import StandardScaler
+from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.metrics import mean_squared_error
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
 
 import common
 import os, pickle
@@ -15,7 +19,7 @@ def load_train_data():
     data_train = pd.read_sql('SELECT * FROM train', con)
     con.close()
     X = data_train.drop(columns=['trip_duration'])
-    y = data_train['trip_duration ']
+    y = data_train['trip_duration']
     return X, y
 
 def preprocess_data(X):
@@ -26,13 +30,49 @@ def preprocess_data(X):
     X['pickup_date'] = X['pickup_datetime'].dt.date
     df_abnormal_dates = X.groupby('pickup_date').size()
     abnormal_dates = df_abnormal_dates[df_abnormal_dates < 6300]
-    dict_weekday = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
-    weekday = X['pickup_datetime'].dt.weekday.map(dict_weekday).rename('weekday')
-    hourofday = X['pickup_datetime'].dt.hour.rename('hour')
-    month = X.pickup_datetime.dt.month.rename('month')
-
+    X['weekday'] = X['pickup_datetime'].dt.weekday
+    X['month'] = X['pickup_datetime'].dt.month
+    X['hour'] = X['pickup_datetime'].dt.hour
+    X['abnormal_period'] = X['pickup_datetime'].dt.date.isin(abnormal_dates.index).astype(int)
 
     return X
 
-X_train, y_train = load_train_data()
+def train_model(X, y):
+    print(f"Building a model")
+    num_features = ['abnormal_period', 'hour']
+    cat_features = ['weekday', 'month']
+    train_features = num_features + cat_features
+    
+    column_transformer = ColumnTransformer([
+    ('ohe', OneHotEncoder(handle_unknown="ignore"), cat_features),
+    ('scaling', StandardScaler(), num_features)]
+    )
+
+    pipeline = Pipeline(steps=[
+        ('ohe_and_scaling', column_transformer),
+        ('regression', Ridge())
+    ])
+
+    model = pipeline.fit(X[train_features], y)
+
+    return model
+
+def persist_model(model, path):
+    print(f"Persisting the model to {path}")
+    model_dir = os.path.dirname(path)
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)
+
+    with open(path, "wb") as file:
+        pickle.dump(model, file)
+    print(f"Done")
+
+
+
+if __name__ == "__main__":
+
+    X_train, y_train = load_train_data()
+    X = preprocess_data(X_train)
+    model = train_model(X, y_train)
+    persist_model(model, MODEL_PATH)
 

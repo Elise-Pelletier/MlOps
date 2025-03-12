@@ -9,7 +9,7 @@ import shutil
 import common
 
 # Configuration des chemins
-DB_PATH = os.path.join('data', 'taxis.db')  # Chemin de la base de données
+DB_PATH = os.path.join( 'data','taxis.db')  # Chemin de la base de données
 ZIP_URL = common.CONFIG['paths']['zip_url']  # URL du fichier ZIP
 ZIP_PATH = common.CONFIG['paths']['zip_path']  # Chemin local du fichier ZIP
 EXTRACT_FOLDER = common.CONFIG['paths']['extract_folder']  # Dossier d'extraction
