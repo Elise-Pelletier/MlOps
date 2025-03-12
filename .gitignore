@@ -172,3 +172,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+#data db
+*.db
+taxis-NYC/data/taxis.db
+bihar-diabetes/data/diabetes.db
