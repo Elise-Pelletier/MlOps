@@ -1,0 +1,4 @@
+paths:
+  db_path: ./../data/taxis.db
+  model_path: ./../model-registry/taxi.model
+  model_custom_path: ./../model-registry/taxi_custom.model
