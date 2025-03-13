@@ -25,18 +25,18 @@ class TaxiModel:
     def __postprocess(self, raw_output) :
 
         if raw_output < 60:
-            return f"{raw_output} secondes"
+            return f"{int(raw_output)} secondes"
         elif raw_output < 3600:
-            minutes = raw_output // 60
-            remaining_seconds = raw_output % 60
+            minutes = int(raw_output // 60)
+            remaining_seconds = int(raw_output % 60)
             return f"{minutes} minutes et {remaining_seconds} secondes"
         else:
-            hours = raw_output // 3600
-            remaining_seconds = raw_output % 3600
-            minutes = remaining_seconds // 60
-            remaining_seconds = remaining_seconds % 60
+            hours = int(raw_output // 3600)
+            remaining_seconds = int(raw_output % 3600)
+            minutes = int(remaining_seconds // 60)
+            remaining_seconds = int(remaining_seconds % 60)
             return f"{hours} heures, {minutes} minutes et {remaining_seconds} secondes"
-        
+            
 
     def predict(self, X):
         X_processed = self.__preprocess(X)
