@@ -19,10 +19,12 @@ class TaxiModel:
         X['hour'] = X['pickup_datetime'].dt.hour
         X['abnormal_period'] = X['pickup_datetime'].dt.date.isin(abnormal_dates.index).astype(int)
         return X
+      
+       
     
     def __postprocess(self, raw_output) :
 
-        """ if raw_output < 60:
+        if raw_output < 60:
             return f"{raw_output} secondes"
         elif raw_output < 3600:
             minutes = raw_output // 60
@@ -33,8 +35,8 @@ class TaxiModel:
             remaining_seconds = raw_output % 3600
             minutes = remaining_seconds // 60
             remaining_seconds = remaining_seconds % 60
-            return f"{hours} heures, {minutes} minutes et {remaining_seconds} secondes" """
-        return(raw_output)
+            return f"{hours} heures, {minutes} minutes et {remaining_seconds} secondes"
+        
 
     def predict(self, X):
         X_processed = self.__preprocess(X)

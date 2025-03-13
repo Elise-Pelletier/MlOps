@@ -1,6 +1,6 @@
 import pickle
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 import uvicorn
 import sqlite3
 import pandas as pd
@@ -28,12 +28,24 @@ app = FastAPI()
 
 class Taxi(BaseModel):
     pickup_datetime : datetime
-    passenger_count : int
+    """ passenger_count : int
     pickup_longitude : float
     pickup_latitude : float
     dropoff_longitude : float
     dropoff_latitude : float
-    store_and_fwd_flag : str
+    store_and_fwd_flag : str """
+
+
+@field_validator('pickup_datetime')
+
+def validate_pickup_datetime(cls, value):
+    # Convertir la valeur en datetime si elle est une chaîne
+    if isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value.replace("Z", ""))
+        except ValueError:
+            raise ValueError("Invalid datetime format. Use ISO 8601 format.")
+    return value
 
 
 
@@ -47,8 +59,18 @@ def predict(taxi: Taxi):
 
     # get prediction
     input_data = pd.DataFrame([taxi.model_dump()])
+    print(input_data)
 
-    result = model.predict(input_data)[0]
+    taxi_model = TaxiModel(model)  # Créer une instance de TaxiModel
+    input_processed = taxi_model._TaxiModel__preprocess(input_data)
+
+    print(input_processed)
+
+    #print(model.feature_names_in_)
+
+    result = model.predict(input_processed)[0]
+
+    esult = taxi_model._TaxiModel__postprocess(result)
 
     return {"result": result}
 
