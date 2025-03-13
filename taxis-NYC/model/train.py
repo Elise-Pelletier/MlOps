@@ -1,4 +1,5 @@
 import sqlite3
+import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.discriminant_analysis import StandardScaler
@@ -37,6 +38,9 @@ def preprocess_data(X):
 
     return X
 
+def preprocess_target(y) :
+    return np.log1p(y).rename('log_'+y.name)
+
 def train_model(X, y):
     print(f"Building a model")
     num_features = ['abnormal_period', 'hour']
@@ -73,6 +77,7 @@ if __name__ == "__main__":
 
     X_train, y_train = load_train_data()
     X = preprocess_data(X_train)
-    model = train_model(X, y_train)
+    y = preprocess_target(y_train)
+    model = train_model(X, y)
     persist_model(model, MODEL_PATH)
 

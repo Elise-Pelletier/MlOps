@@ -1,3 +1,5 @@
+from datetime import timedelta
+import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.discriminant_analysis import StandardScaler
@@ -18,27 +20,21 @@ class TaxiModel:
         X['month'] = X['pickup_datetime'].dt.month
         X['hour'] = X['pickup_datetime'].dt.hour
         X['abnormal_period'] = X['pickup_datetime'].dt.date.isin(abnormal_dates.index).astype(int)
-        return X
+        
+        num_features = ['abnormal_period', 'hour']
+        cat_features = ['weekday', 'month']
+        train_features = num_features + cat_features
+        return X[train_features]
       
        
     
     def __postprocess(self, raw_output) :
 
-        if raw_output < 60:
-            return f"{int(raw_output)} secondes"
-        elif raw_output < 3600:
-            minutes = int(raw_output // 60)
-            remaining_seconds = int(raw_output % 60)
-            return f"{minutes} minutes et {remaining_seconds} secondes"
-        else:
-            hours = int(raw_output // 3600)
-            remaining_seconds = int(raw_output % 3600)
-            minutes = int(remaining_seconds // 60)
-            remaining_seconds = int(remaining_seconds % 60)
-            return f"{hours} heures, {minutes} minutes et {remaining_seconds} secondes"
-            
+        return np.expm1(raw_output)
+
 
     def predict(self, X):
         X_processed = self.__preprocess(X)
+        print(X_processed)
         raw_output = self.model.predict(X_processed)
         return self.__postprocess(raw_output)

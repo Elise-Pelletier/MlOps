@@ -48,19 +48,8 @@ def predict(taxi: Taxi):
 
     # get prediction
     input_data = pd.DataFrame([taxi.model_dump()])
-    print(input_data)
-
-    taxi_model = TaxiModel(model)  # Créer une instance de TaxiModel
-    input_processed = taxi_model._TaxiModel__preprocess(input_data)
-
-    print(input_processed)
-
-    #print(model.feature_names_in_)
-
-    result = model.predict(input_processed)[0]
-
-    result = taxi_model._TaxiModel__postprocess(result)
-
+    taxi_model = TaxiModel(model)
+    result = taxi_model.predict(input_data)[0]
     return {"result": result}
 
 
