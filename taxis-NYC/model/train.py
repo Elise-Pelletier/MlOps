@@ -9,7 +9,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from model.TaxiModel import TaxiModel
 
-
 import common
 import os, pickle
 

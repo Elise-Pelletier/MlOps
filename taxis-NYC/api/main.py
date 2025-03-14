@@ -26,7 +26,7 @@ MODEL_PATH = config.CONFIG['paths']['model_path']
 app = FastAPI()
 
 
-class Taxi(BaseModel):
+class Trip(BaseModel):
     pickup_datetime : datetime
     """ passenger_count : int
     pickup_longitude : float
@@ -36,10 +36,8 @@ class Taxi(BaseModel):
     store_and_fwd_flag : str """
 
 
-
-
 @app.post("/predict")
-def predict(taxi: Taxi):
+def predict(trip: Trip):
 
     # load model
     print(f"Loading the model from {MODEL_PATH}")
@@ -49,7 +47,7 @@ def predict(taxi: Taxi):
     
     # get prediction
     print("init dataframe")
-    input_data = pd.DataFrame([taxi.model_dump()])
+    input_data = pd.DataFrame([trip.model_dump()])
     print(model)
    
     result = model.predict(input_data)[0]
