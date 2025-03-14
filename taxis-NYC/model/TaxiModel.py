@@ -25,16 +25,21 @@ class TaxiModel:
         cat_features = ['weekday', 'month']
         train_features = num_features + cat_features
         return X[train_features]
-      
-       
+    
+    
+    def fit(self, X, y):
+        X_processed = self.__preprocess(X)
+        self.model.fit(X_processed, np.log1p(y).rename('log_'+y.name))
+        return self
+        
+
     
     def __postprocess(self, raw_output) :
-
-        return np.expm1(raw_output)
-
+        output = np.expm1(raw_output)
+        return output
+    
 
     def predict(self, X):
         X_processed = self.__preprocess(X)
-        print(X_processed)
         raw_output = self.model.predict(X_processed)
         return self.__postprocess(raw_output)

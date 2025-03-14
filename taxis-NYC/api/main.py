@@ -44,12 +44,17 @@ def predict(taxi: Taxi):
     # load model
     print(f"Loading the model from {MODEL_PATH}")
     with open(MODEL_PATH, "rb") as file:
+        print(file)
         model = pickle.load(file)
-
+    
     # get prediction
+    print("init dataframe")
     input_data = pd.DataFrame([taxi.model_dump()])
-    taxi_model = TaxiModel(model)
-    result = taxi_model.predict(input_data)[0]
+    print(model)
+   
+    result = model.predict(input_data)[0]
+
+   
     return {"result": result}
 
 

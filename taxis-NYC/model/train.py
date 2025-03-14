@@ -7,9 +7,12 @@ from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.metrics import mean_squared_error
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
+from model.TaxiModel import TaxiModel
+
 
 import common
 import os, pickle
+
 
 DB_PATH = os.path.join('data', 'taxis.db') 
 MODEL_PATH = common.CONFIG['paths']['model_path']
@@ -23,29 +26,10 @@ def load_train_data():
     y = data_train['trip_duration']
     return X, y
 
-def preprocess_data(X):
-    print(f"Preprocessing data")
-    X = X.drop(columns=['id'])
-    X = X.drop(columns=['dropoff_datetime'])
-    X['pickup_datetime'] = pd.to_datetime(X['pickup_datetime'])
-    X['pickup_date'] = X['pickup_datetime'].dt.date
-    df_abnormal_dates = X.groupby('pickup_date').size()
-    abnormal_dates = df_abnormal_dates[df_abnormal_dates < 6300]
-    X['weekday'] = X['pickup_datetime'].dt.weekday
-    X['month'] = X['pickup_datetime'].dt.month
-    X['hour'] = X['pickup_datetime'].dt.hour
-    X['abnormal_period'] = X['pickup_datetime'].dt.date.isin(abnormal_dates.index).astype(int)
-
-    return X
-
-def preprocess_target(y) :
-    return np.log1p(y).rename('log_'+y.name)
-
 def train_model(X, y):
     print(f"Building a model")
     num_features = ['abnormal_period', 'hour']
     cat_features = ['weekday', 'month']
-    train_features = num_features + cat_features
     
     column_transformer = ColumnTransformer([
     ('ohe', OneHotEncoder(handle_unknown="ignore"), cat_features),
@@ -56,8 +40,7 @@ def train_model(X, y):
         ('ohe_and_scaling', column_transformer),
         ('regression', Ridge())
     ])
-
-    model = pipeline.fit(X[train_features], y)
+    model = TaxiModel(pipeline)
 
     return model
 
@@ -69,15 +52,13 @@ def persist_model(model, path):
 
     with open(path, "wb") as file:
         pickle.dump(model, file)
-    print(f"Done")
-
+        print(f"Done")
 
 
 if __name__ == "__main__":
 
-    X_train, y_train = load_train_data()
-    X = preprocess_data(X_train)
-    y = preprocess_target(y_train)
+    X, y = load_train_data()
     model = train_model(X, y)
+    model = model.fit(X, y)
     persist_model(model, MODEL_PATH)
 
